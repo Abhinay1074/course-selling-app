@@ -1,9 +1,17 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
-await mongoose.connect("mongodb+srv://abhinaysahai2004_db_user:ZBXQWiln0tQiVfOW@cluster0.pyj0gta.mongodb.net/courseselling-app-Data")
+
 const ObjectId = mongoose.Types.ObjectId;
 
+async function connectDB() {
+    await mongoose.connect(
+        "mongodb+srv://abhinaysahai2004_db_user:ZBXQWiln0tQiVfOW@cluster0.pyj0gta.mongodb.net/courseselling-app-Data"
+    );
 
+    console.log("Database connected");
+}
+
+connectDB();
 const userSchema = new Schema({
     email:{type:String,unique:true},
     password:String,

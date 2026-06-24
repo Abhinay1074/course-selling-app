@@ -1,31 +1,74 @@
-const { Router }= require("express");//{Router}
-
+const { Router } = require("express");//{Router}
+const bcrypt = require("bcrypt");
 const userRouter = Router();
+const jwt = require("jsonwebtoken");
+const JWT_USER_PASSWORD = "absakbadhsi1234";
 
+const { userModel } = require("../db");
 
-    userRouter.post("//signup", function (req, res) {
-        const userEmail = req.body.email;
-        const password = req.body.password;
-        const firstName = req.body.firstName;
-        const lasttName = req.body.lasttName;
-        res.json({
-            message: "signup endpoint!"
+userRouter.post("/signup", async function (req, res) {
+    const { email, password, firstName, lastName } = req.body;
+    try {
+        const hashedpassword = await bcrypt.hash(password, 4);
+
+        await userModel.create({
+            email: email,
+            password: hashedpassword,
+            firstName: firstName,
+            lastName: lastName
+        });
+    }
+    catch (e) {
+        return res.json({
+            message: "signup failed!"
         })
-    })
 
-    userRouter.post("/signin", function (req, res) {
-        res.json({
-            message: ""
-        })
-    })
+    }
 
-    userRouter.get("/purchases", function (req, res) {
-        res.json({
-            message: "signup endpoint!"
-        })
+    res.json({
+        message: "signup successful!"
     })
+})
+
+userRouter.post("/signin", async function (req, res) {
+    const { email, password } = req.body;
+    const user = await userModel.findOne({
+        email: email,
+    })
+    if (!user) {
+        res.status(403).json({
+            message: "user does not exist in the database"
+        })
+        return
+    }
+
+    const passwordMatch = await bcrypt.compare(password, user.password)
+    console.log(user);
+    if (passwordMatch) {
+        const token = jwt.sign({
+            id: user._id.toString()
+
+        }, JWT_USER_PASSWORD)
+        res.json({
+            token: token
+
+        })
+    }
+    else {
+        res.status(401).json({
+            message: "credentials are wrong or invalid"
+        })
+    }
+
+})
+
+userRouter.get("/purchases", function (req, res) {
+    res.json({
+        message: "signup endpoint!"
+    })
+})
 
 
 module.exports = {
-    userRouter : userRouter
+    userRouter: userRouter
 }
