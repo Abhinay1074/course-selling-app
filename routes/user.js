@@ -2,9 +2,9 @@ const { Router } = require("express");//{Router}
 const bcrypt = require("bcrypt");
 const userRouter = Router();
 const jwt = require("jsonwebtoken");
-const JWT_USER_PASSWORD = "absakbadhsi1234";
-
+const {JWT_USER_PASSWORD} = require("../config");
 const { userModel } = require("../db");
+const { userMiddleware } = require("../middlewares/user");
 
 userRouter.post("/signup", async function (req, res) {
     const { email, password, firstName, lastName } = req.body;
@@ -62,7 +62,7 @@ userRouter.post("/signin", async function (req, res) {
 
 })
 
-userRouter.get("/purchases", function (req, res) {
+userRouter.get("/purchases",userMiddleware, function (req, res) {
     res.json({
         message: "signup endpoint!"
     })
