@@ -2,9 +2,10 @@ const { Router } = require("express");
 const adminRouter = Router();
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const{JWT_ADMIN_PASSWORD} = require("../config");
+const { JWT_ADMIN_PASSWORD } = require("../config");
 const { adminModel, courseModel } = require("../db");
 const { adminMiddleware } = require("../middlewares/admin");
+const { de } = require("zod/locales");
 
 adminRouter.post("/signup", async function (req, res) {
     const { email, password, firstName, lastName } = req.body;
@@ -38,7 +39,7 @@ adminRouter.post("/signin", async function (req, res) {
         return res.status(403).json({
             message: "admin does not exist in the database"
         })
-        
+
     }
 
     const passwordMatch = await bcrypt.compare(password, admin.password)
@@ -60,29 +61,62 @@ adminRouter.post("/signin", async function (req, res) {
     }
 })
 
-adminRouter.post("/course",adminMiddleware,async function (req, res) {
+adminRouter.post("/course", adminMiddleware, async function (req, res) {
     const adminId = req.adminId;
-    const{title,description,imageURL,price} = req.body;
+    const { title, description, imageUrl, price } = req.body;
     const course = await courseModel.create({
-        title:title,
-        description:description,
-        imageUrl:imageURL,
-        price:price,
-        creatorId:adminId
+        title: title,
+        description: description,
+        imageUrl: imageUrl,
+        price: price,
+        creatorId: adminId
     })
     res.json({
         message: "course created",
-        courseId:course._id
+        courseId: course._id
     })
 })
-adminRouter.put("/course", function (req, res) {
-    res.json({
+adminRouter.put("/course", adminMiddleware, async function (req, res) {
+    try {
+        const adminId = req.adminId;
+        const { title, description, imageUrl, price, courseId } = req.body;
 
-    })
+
+        const course = await courseModel.updateOne({
+            _id: courseId,
+            creatorId: adminId
+
+        }, {
+            title: title,
+            description: description,
+            imageUrl: imageUrl,
+            price: price,
+            creatorId: adminId
+        })
+        res.json({
+            message: "course updated",
+            courseId: course._id
+        })
+    }
+    catch (e) {
+        res.status(500).json({
+            message: "course creation failed!"
+        })
+    }
+
+
+
 })
-adminRouter.get("/course/bulk", function (req, res) {
+adminRouter.get("/course/bulk", adminMiddleware, async function (req, res) {
+    const adminId = req.adminId;
+
+    const courses = await courseModel.find({
+        creatorId: adminId
+    })
     res.json({
-        message: ""
+        message: "here is the list of the courses",
+        courses
+
     })
 })
 
