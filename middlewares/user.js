@@ -1,21 +1,36 @@
 const jwt = require("jsonwebtoken");
-const {JWT_USER_PASSWORD} = require("../config");
+const { JWT_USER_PASSWORD } = require("../config");
 
-function userMiddleware(req,res,next){
+
+function userMiddleware(req, res, next) {
+
     const token = req.headers.token;
-    const decoded = jwt.verify(token,JWT_USER_PASSWORD);
-    if(decoded){
-        req.userId = decoded.id;
-        next();
-    }else{
-        res.status(403).json({
-            message:"you are not signed in"
-        })
+
+    if (!token) {
+        return res.status(403).json({
+            message: "token missing"
+        });
     }
 
+    try {
 
+        const decoded = jwt.verify(token, JWT_USER_PASSWORD);
+
+        req.userId = decoded.id;
+
+        next();
+
+    } 
+    catch(e) {
+
+        return res.status(403).json({
+            message: "you are not signed in"
+        });
+
+    }
 }
+
 
 module.exports = {
-    userMiddleware:userMiddleware
-}
+    userMiddleware
+};

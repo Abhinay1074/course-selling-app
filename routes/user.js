@@ -32,18 +32,20 @@ userRouter.post("/signup", async function (req, res) {
 
 userRouter.post("/signin", async function (req, res) {
     const { email, password } = req.body;
+
     const user = await userModel.findOne({
         email: email,
     })
     if (!user) {
-        res.status(403).json({
+        return res.status(403).json({
             message: "user does not exist in the database"
         })
-        return
+        
     }
 
-    const passwordMatch = await bcrypt.compare(password, user.password)
-    console.log(user);
+    const passwordMatch = await bcrypt.compare(password, user.password);
+
+    
     if (passwordMatch) {
         const token = jwt.sign({
             id: user._id.toString()
