@@ -5,7 +5,6 @@ const jwt = require("jsonwebtoken");
 const { JWT_ADMIN_PASSWORD } = require("../config");
 const { adminModel, courseModel } = require("../db");
 const { adminMiddleware } = require("../middlewares/admin");
-const { de } = require("zod/locales");
 
 adminRouter.post("/signup", async function (req, res) {
     const { email, password, firstName, lastName } = req.body;
@@ -82,7 +81,7 @@ adminRouter.put("/course", adminMiddleware, async function (req, res) {
         const { title, description, imageUrl, price, courseId } = req.body;
 
 
-        const course = await courseModel.updateOne({
+        const course = await courseModel.findOneAndUpdate({
             _id: courseId,
             creatorId: adminId
 
@@ -92,7 +91,14 @@ adminRouter.put("/course", adminMiddleware, async function (req, res) {
             imageUrl: imageUrl,
             price: price,
             creatorId: adminId
-        })
+        }, { new: true })
+
+        if (!course) {
+            return res.status(404).json({
+                message: "course not found"
+            })
+        }
+
         res.json({
             message: "course updated",
             courseId: course._id

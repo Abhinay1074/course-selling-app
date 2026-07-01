@@ -68,7 +68,7 @@ userRouter.get("/purchases",userMiddleware, async function (req, res) {
     const userId = req.userId;
     const purchases = await purchaseModel.find({
        userId,
-    })
+    }).populate("courseId")
     res.json({
         purchases
     })

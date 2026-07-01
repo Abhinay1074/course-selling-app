@@ -4,7 +4,10 @@ const { JWT_USER_PASSWORD } = require("../config");
 
 function userMiddleware(req, res, next) {
 
-    const token = req.headers.token;
+    const authHeader = req.headers.authorization;
+    const token = authHeader && authHeader.startsWith("Bearer ")
+        ? authHeader.split(" ")[1]
+        : req.headers.token;
 
     if (!token) {
         return res.status(403).json({

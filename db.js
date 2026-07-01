@@ -29,8 +29,8 @@ const courseSchema =  new Schema({
 });
 
 const purchaseSchema = new Schema({
-    userId: ObjectId,
-    courseId: ObjectId
+    userId: { type: Schema.Types.ObjectId, ref: "user" },
+    courseId: { type: Schema.Types.ObjectId, ref: "course" }
 
 });
 
